@@ -60,14 +60,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
-        <!-- Suporte a testes unitários e de integração -->
+        
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-   
+		    <groupId>com.google.genai</groupId>
+		    <artifactId>google-genai</artifactId>
+		    <version>0.1.0</version> 
+		</dependency>
+  
 	</dependencies>
 
 	<build>
