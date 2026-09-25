@@ -1,7 +1,9 @@
 package com.singular.book.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -20,7 +22,9 @@ import jakarta.persistence.Table;
 */
 @Entity
 @Table(name = "BOOK")
-public class Book {
+public class Book implements Serializable{
+
+	private static final long serialVersionUID = 5962098022403108945L;
 
 	@Id
 	@Column(name = "BOOK_ID")
@@ -113,4 +117,17 @@ public class Book {
    public void setGenres(List<Genre> genres) {
        this.genres = genres;
    }
+   
+   @Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Book book = (Book) o;
+		return id != null && Objects.equals(id, book.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return getClass().hashCode();
+	}
 }

@@ -1,6 +1,8 @@
 package com.singular.book.entity;
 
+import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Objects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,7 +15,10 @@ import jakarta.persistence.Table;
 //Representa a tabela de autores 
 @Entity 
 @Table(name="AUTHOR")
-public class Author {
+public class Author implements Serializable{
+
+	private static final long serialVersionUID = -5385170493025717623L;
+
 	@Id
 	@Column(name = "AUTHOR_ID")
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AUTHOR_SEQ_GEN")
@@ -69,6 +74,19 @@ public class Author {
 
 	public void setCountry(String country) {
 		this.country = country;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Author author = (Author) o;
+		return id != null && Objects.equals(id, author.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return getClass().hashCode();
 	}
 
 }

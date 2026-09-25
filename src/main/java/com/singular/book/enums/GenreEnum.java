@@ -27,8 +27,7 @@ public enum GenreEnum {
         return description;
     }
 
-    // Método utilitário para buscar a constante do Enum a partir de um ID do banco
-    public static GenreEnum fromId(Long id) {
+     public static GenreEnum fromId(Long id) {
         if (id == null) {
             return null;
         }
