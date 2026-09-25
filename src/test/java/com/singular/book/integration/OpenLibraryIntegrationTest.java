@@ -29,6 +29,12 @@ class OpenLibraryIntegrationTest {
         
         // Valida se os dados do primeiro livro foram mapeados nos VOs
         assertNotNull(response.getDocs().get(0).getTitle(), "O título do livro deve estar preenchido");
+        
+        // Busca url da capa do livro
+        String urlCover = OpenLibraryIntegration.findFirstUrlCover(response);
+        System.out.println("Url capa: " +urlCover);
+        assertTrue(urlCover.toUpperCase().contains("HTTP"));
+        
     }
 
     @Test

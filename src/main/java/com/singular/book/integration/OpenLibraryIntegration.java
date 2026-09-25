@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import com.singular.book.exceptions.BusinessException;
+import com.singular.book.vo.BookAPIVO;
 import com.singular.book.vo.OpenLibraryAuthorSearchResponseVO;
 import com.singular.book.vo.OpenLibrarySearchResponseVO;
 
@@ -33,6 +34,9 @@ public class OpenLibraryIntegration {
 
 	@Value("${url.integration.open.library.authors}")
 	private String urlAuthors;
+	
+	@Value("${url.integration.open.libary.cover}")
+	private String urlCover;
 
 	private RestClient restClient;
 
@@ -68,6 +72,26 @@ public class OpenLibraryIntegration {
 		checkInitialization();
 		return staticInstance.searchAuthors(authorQuery);
 	}
+	
+	public static String findUrlCover(Long coverI)  throws BusinessException {
+		checkInitialization();
+		return staticInstance.transformUrlCover(coverI);
+	}
+	
+	
+	public static String findFirstUrlCover(OpenLibrarySearchResponseVO response)  throws BusinessException {
+		if(response != null && response.getDocs() != null && !response.getDocs().isEmpty()) {
+			for(BookAPIVO book: response.getDocs()) {
+				if(book.getCoverI() !=null) {
+					return findUrlCover(book.getCoverI());
+				}
+			}
+			
+		}
+		
+		return "";
+	
+	}
 
 	private static void checkInitialization() throws BusinessException {
 		if (staticInstance == null) {
@@ -95,6 +119,15 @@ public class OpenLibraryIntegration {
 	public OpenLibraryAuthorSearchResponseVO searchAuthors(String authorQuery) throws BusinessException {
 		String formattedUrl = MessageFormat.format(urlAuthors, authorQuery);
 		return executeGet(formattedUrl, OpenLibraryAuthorSearchResponseVO.class);
+	}
+	
+	public String transformUrlCover(Long coverI)  throws BusinessException {
+		if(coverI  != null) {
+			return MessageFormat.format(urlCover, coverI);
+		}
+		
+		return "";
+		
 	}
 
 	private <T> T executeGet(String urlString, Class<T> responseType) throws BusinessException {
