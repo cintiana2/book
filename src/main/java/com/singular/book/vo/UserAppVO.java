@@ -6,87 +6,119 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Set;
 
 public class UserAppVO implements Serializable {
 
-  	private static final long serialVersionUID = 2257421265688421736L;
+	private static final long serialVersionUID = 2257421265688421736L;
 
 	private Long id;
 
-    @NotBlank(message = "O nome é obrigatório.")
-    @Size(max = 100, message = "O nome não pode exceder 100 caracteres.")
-    private String name;
+	@NotBlank(message = "O nome é obrigatório.")
+	@Size(max = 100, message = "O nome não pode exceder 100 caracteres.")
+	private String name;
 
-    @NotBlank(message = "O login é obrigatório.")
-    @Size(max = 50, message = "O login não pode exceder 50 caracteres.")
-    private String login;
+	@NotBlank(message = "O login é obrigatório.")
+	@Size(max = 50, message = "O login não pode exceder 50 caracteres.")
+	private String login;
 
-    // WRITE_ONLY garante que a senha seja recebida nas requisições, mas NUNCA serializada na resposta JSON
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @Size(min = 6, max = 20, message = "A senha deve ter entre 6 e 20 caracteres.")
-    private String password;
+	// WRITE_ONLY garante que a senha seja recebida nas requisições, mas NUNCA
+	// serializada na resposta JSON
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	@Size(min = 6, max = 20, message = "A senha deve ter entre 6 e 20 caracteres.")
+	private String password;
 
-    @NotNull(message = "O ID do status é obrigatório.")
-    private Long statusId;
+	@NotNull(message = "O ID do status é obrigatório.")
+	private Long statusId;
 
-    private String statusDescription;
+	private String statusDescription;
 
-    public UserAppVO() {
-    }
+	private Set<String> roles;
+	private LocalDateTime lastLogin;
 
-    public UserAppVO(Long id, String name, String login, Long statusId, String statusDescription) {
-        this.id = id;
-        this.name = name;
-        this.login = login;
-        this.statusId = statusId;
-        this.statusDescription = statusDescription;
-    }
+	public UserAppVO() {
+	}
 
-    public Long getId() {
-        return id;
-    }
+	public UserAppVO(Long id,
+			@NotBlank(message = "O nome é obrigatório.") @Size(max = 100, message = "O nome não pode exceder 100 caracteres.") String name,
+			@NotBlank(message = "O login é obrigatório.") @Size(max = 50, message = "O login não pode exceder 50 caracteres.") String login,
+			@Size(min = 6, max = 20, message = "A senha deve ter entre 6 e 20 caracteres.") String password,
+			@NotNull(message = "O ID do status é obrigatório.") Long statusId, String statusDescription,
+			Set<String> roles, LocalDateTime lastLogin) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.login = login;
+		this.password = password;
+		this.statusId = statusId;
+		this.statusDescription = statusDescription;
+		this.roles = roles;
+		this.lastLogin = lastLogin;
+	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public String getLogin() {
-        return login;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public void setLogin(String login) {
-        this.login = login;
-    }
+	public String getLogin() {
+		return login;
+	}
 
-    public String getPassword() {
-        return password;
-    }
+	public void setLogin(String login) {
+		this.login = login;
+	}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	public String getPassword() {
+		return password;
+	}
 
-    public Long getStatusId() {
-        return statusId;
-    }
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
-    public void setStatusId(Long statusId) {
-        this.statusId = statusId;
-    }
+	public Long getStatusId() {
+		return statusId;
+	}
 
-    public String getStatusDescription() {
-        return statusDescription;
-    }
+	public void setStatusId(Long statusId) {
+		this.statusId = statusId;
+	}
 
-    public void setStatusDescription(String statusDescription) {
-        this.statusDescription = statusDescription;
-    }
+	public String getStatusDescription() {
+		return statusDescription;
+	}
+
+	public void setStatusDescription(String statusDescription) {
+		this.statusDescription = statusDescription;
+	}
+
+	public Set<String> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<String> roles) {
+		this.roles = roles;
+	}
+
+	public LocalDateTime getLastLogin() {
+		return lastLogin;
+	}
+
+	public void setLastLogin(LocalDateTime lastLogin) {
+		this.lastLogin = lastLogin;
+	}
+
 }

@@ -1,10 +1,12 @@
 package com.singular.book.service;
 
+import com.singular.book.entity.Role;
 import com.singular.book.entity.UserApp;
 import com.singular.book.entity.UserStatus;
 import com.singular.book.repository.UserAppRepository;
 import com.singular.book.repository.UserStatusRepository;
 import com.singular.book.vo.ChangePasswordVO;
+import com.singular.book.vo.LoginVO;
 import com.singular.book.vo.UserAppVO;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +44,7 @@ class UserAppServiceTest {
     private UserApp userApp;
     private UserStatus activeStatus;
     private UserStatus inactiveStatus;
+    private Role defaultRole;
     private UserAppVO userAppVO;
 
     @BeforeEach
@@ -54,12 +57,17 @@ class UserAppServiceTest {
         inactiveStatus.setId(2L);
         inactiveStatus.setName("INATIVO");
 
+        defaultRole = new Role();
+        defaultRole.setId(1L);
+        defaultRole.setName("ROLE_USER");
+
         userApp = new UserApp();
         userApp.setId(1L);
         userApp.setName("Cíntia Araújo");
         userApp.setLogin("cintia.araujo");
         userApp.setPassword("encodedPassword123");
         userApp.setStatus(activeStatus);
+        userApp.getRoles().add(defaultRole);
 
         userAppVO = new UserAppVO();
         userAppVO.setName("Cíntia Araújo");
@@ -73,7 +81,7 @@ class UserAppServiceTest {
     class CreateTests {
 
         @Test
-        @DisplayName("Deve criar utilizador com sucesso")
+        @DisplayName("Deve criar utilizador com sucesso e atribuir ROLE_USER")
         void shouldCreateUserSuccessfully() {
             when(userAppRepository.existsByLogin(userAppVO.getLogin())).thenReturn(false);
             when(userStatusRepository.findById(1L)).thenReturn(Optional.of(activeStatus));
@@ -87,6 +95,7 @@ class UserAppServiceTest {
             assertEquals("Cíntia Araújo", result.getName());
             assertEquals("cintia.araujo", result.getLogin());
             assertEquals("ATIVO", result.getStatusDescription());
+            assertTrue(result.getRoles().contains("ROLE_USER"));
 
             verify(userAppRepository).existsByLogin(userAppVO.getLogin());
             verify(passwordEncoder).encode("rawPassword123");
@@ -134,6 +143,88 @@ class UserAppServiceTest {
             );
 
             assertEquals("Status não encontrado para o ID informado.", exception.getMessage());
+            verify(userAppRepository, never()).save(any());
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Testes do Método Login")
+    class LoginTests {
+
+        @Test
+        @DisplayName("Deve realizar login com sucesso e atualizar lastLogin")
+        void shouldLoginSuccessfully() {
+            LoginVO loginVO = new LoginVO();
+            loginVO.setLogin("cintia.araujo");
+            loginVO.setPassword("rawPassword123");
+
+            when(userAppRepository.findByLogin("cintia.araujo")).thenReturn(Optional.of(userApp));
+            when(passwordEncoder.matches("rawPassword123", "encodedPassword123")).thenReturn(true);
+            when(userAppRepository.save(any(UserApp.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            UserAppVO result = userAppService.login(loginVO);
+
+            assertNotNull(result);
+            assertEquals("cintia.araujo", result.getLogin());
+            assertNotNull(result.getLastLogin());
+
+            verify(userAppRepository).save(userApp);
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção no login se o usuário estiver inativo")
+        void shouldThrowExceptionWhenUserIsInactiveOnLogin() {
+            LoginVO loginVO = new LoginVO();
+            loginVO.setLogin("cintia.araujo");
+            loginVO.setPassword("rawPassword123");
+
+            userApp.setStatus(inactiveStatus);
+            when(userAppRepository.findByLogin("cintia.araujo")).thenReturn(Optional.of(userApp));
+
+            IllegalStateException exception = assertThrows(
+                    IllegalStateException.class,
+                    () -> userAppService.login(loginVO)
+            );
+
+            assertEquals("Usuário inativo. Acesso negado.", exception.getMessage());
+            verify(userAppRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção no login se a senha estiver incorreta")
+        void shouldThrowExceptionWhenPasswordIsIncorrectOnLogin() {
+            LoginVO loginVO = new LoginVO();
+            loginVO.setLogin("cintia.araujo");
+            loginVO.setPassword("wrongPassword");
+
+            when(userAppRepository.findByLogin("cintia.araujo")).thenReturn(Optional.of(userApp));
+            when(passwordEncoder.matches("wrongPassword", "encodedPassword123")).thenReturn(false);
+
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> userAppService.login(loginVO)
+            );
+
+            assertEquals("Login ou senha incorretos.", exception.getMessage());
+            verify(userAppRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção no login se o login não for encontrado")
+        void shouldThrowExceptionWhenUserNotFoundOnLogin() {
+            LoginVO loginVO = new LoginVO();
+            loginVO.setLogin("inexistente");
+            loginVO.setPassword("rawPassword123");
+
+            when(userAppRepository.findByLogin("inexistente")).thenReturn(Optional.empty());
+
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> userAppService.login(loginVO)
+            );
+
+            assertEquals("Login ou senha incorretos.", exception.getMessage());
             verify(userAppRepository, never()).save(any());
         }
     }

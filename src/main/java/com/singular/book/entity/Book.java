@@ -1,6 +1,7 @@
 package com.singular.book.entity;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -8,21 +9,23 @@ import java.util.Objects;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 /**
-* Entidade principal representando um livro.
-*/
+ * Entidade principal representando um livro.
+ */
 @Entity
 @Table(name = "BOOK")
-public class Book implements Serializable{
+public class Book implements Serializable {
 
 	private static final long serialVersionUID = 5962098022403108945L;
 
@@ -35,93 +38,132 @@ public class Book implements Serializable{
 	@Column(name = "TITLE", nullable = false, length = 200)
 	private String title;
 
-   @Column(name = "LANGUAGE", nullable = false, length = 50)
-   private String language;
+	@Column(name = "LANGUAGE", nullable = false, length = 50)
+	private String language;
 
-   @Column(name = "ISBN", unique = true, length = 20)
-   private String isbn;
+	@Column(name = "ISBN", unique = true, length = 20)
+	private String isbn;
 
-   // Relacionamento muitos-para-muitos com Autores
-   @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-   @JoinTable(
-       name = "BOOK_AUTHOR",
-       joinColumns = @JoinColumn(name = "BOOK_ID"),
-       inverseJoinColumns = @JoinColumn(name = "AUTHOR_ID")
-   )
-   private List<Author> authors = new ArrayList<>();
+	@Column(name = "CREATED_AT", nullable = false, updatable = false)
+	private LocalDateTime createdAt;
 
-   // Relacionamento muitos-para-muitos com Gêneros
-   @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-   @JoinTable(
-       name = "BOOK_GENRE",
-       joinColumns = @JoinColumn(name = "BOOK_ID"),
-       inverseJoinColumns = @JoinColumn(name = "GENRE_ID")
-   )
-   private List<Genre> genres = new ArrayList<>();
+	@Column(name = "UPDATED_AT", nullable = false)
+	private LocalDateTime updatedAt;
 
- 
-   public Book() {}
+	// Relacionamento muitos-para-muitos com Autores
+	@ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@JoinTable(name = "BOOK_AUTHOR", joinColumns = @JoinColumn(name = "BOOK_ID"), inverseJoinColumns = @JoinColumn(name = "AUTHOR_ID"))
+	private List<Author> authors = new ArrayList<>();
 
-   public Book(Long id, String title, String language, String isbn) {
-       this.id = id;
-       this.title = title;
-       this.language = language;
-       this.isbn = isbn;
-   }
+	// Relacionamento muitos-para-muitos com Gêneros
+	@ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@JoinTable(name = "BOOK_GENRE", joinColumns = @JoinColumn(name = "BOOK_ID"), inverseJoinColumns = @JoinColumn(name = "GENRE_ID"))
+	private List<Genre> genres = new ArrayList<>();
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "UPDATED_BY")
+	private UserApp updatedBy;
 
-   // Getters e Setters
-   public Long getId() {
-       return id;
-   }
+	public Book() {
+	}
 
-   public void setId(Long id) {
-       this.id = id;
-   }
+	
 
-   public String getTitle() {
-       return title;
-   }
+	public Book(Long id, String title, String language, String isbn, LocalDateTime createdAt, LocalDateTime updatedAt,
+			List<Author> authors, List<Genre> genres, UserApp updatedBy) {
+		super();
+		this.id = id;
+		this.title = title;
+		this.language = language;
+		this.isbn = isbn;
+		this.createdAt = createdAt;
+		this.updatedAt = updatedAt;
+		this.authors = authors;
+		this.genres = genres;
+		this.updatedBy = updatedBy;
+	}
 
-   public void setTitle(String title) {
-       this.title = title;
-   }
 
-   public String getLanguage() {
-       return language;
-   }
 
-   public void setLanguage(String language) {
-       this.language = language;
-   }
+	// Getters e Setters
+	public Long getId() {
+		return id;
+	}
 
-   public String getIsbn() {
-       return isbn;
-   }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-   public void setIsbn(String isbn) {
-       this.isbn = isbn;
-   }
+	public String getTitle() {
+		return title;
+	}
 
-   public List<Author> getAuthors() {
-       return authors;
-   }
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
-   public void setAuthors(List<Author> authors) {
-       this.authors = authors;
-   }
+	public String getLanguage() {
+		return language;
+	}
 
-   public List<Genre> getGenres() {
-       return genres;
-   }
+	public void setLanguage(String language) {
+		this.language = language;
+	}
 
-   public void setGenres(List<Genre> genres) {
-       this.genres = genres;
-   }
-   
-   @Override
+	public String getIsbn() {
+		return isbn;
+	}
+
+	public void setIsbn(String isbn) {
+		this.isbn = isbn;
+	}
+
+	public List<Author> getAuthors() {
+		return authors;
+	}
+
+	public void setAuthors(List<Author> authors) {
+		this.authors = authors;
+	}
+
+	public List<Genre> getGenres() {
+		return genres;
+	}
+
+	public void setGenres(List<Genre> genres) {
+		this.genres = genres;
+	}
+	
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDateTime getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+	
+	public UserApp getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(UserApp updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+
+	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
 		Book book = (Book) o;
 		return id != null && Objects.equals(id, book.id);
 	}

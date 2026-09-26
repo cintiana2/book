@@ -2,6 +2,7 @@ package com.singular.book.controller;
 
 import com.singular.book.service.UserAppService;
 import com.singular.book.vo.ChangePasswordVO;
+import com.singular.book.vo.LoginVO;
 import com.singular.book.vo.UserAppVO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -61,6 +62,12 @@ public class UserAppController {
     @GetMapping
     public ResponseEntity<List<UserAppVO>> findAll() {
         List<UserAppVO> response = userAppService.findAll();
+        return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/login")
+    public ResponseEntity<UserAppVO> login(@Valid @RequestBody LoginVO loginVo) {
+        UserAppVO response = userAppService.login(loginVo);
         return ResponseEntity.ok(response);
     }
 }

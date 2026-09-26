@@ -41,14 +41,19 @@ public class UserBook implements Serializable {
 
     @Column(name = "UPDATED_AT", nullable = false)
     private LocalDateTime updatedAt;
+    
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "UPDATED_BY")
+	private UserApp updatedBy;
 
     public UserBook() {
     }
 
-    public UserBook(UserApp user, Book book, Boolean registeredBy, 
+    public UserBook(UserApp user, Book book, UserApp updatedBy, Boolean registeredBy, 
     		Boolean readBy, Boolean writtenBy) {
         this.user = user;
         this.book = book;
+        this.updatedBy = updatedBy;
         this.registeredBy = registeredBy != null ? registeredBy : false;
         this.readBy = readBy != null ? readBy : false;
         this.writtenBy = writtenBy != null ? writtenBy : false;
