@@ -16,7 +16,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
-//Representa a tabela de autores 
+
 @Entity
 @Table(name = "AUTHOR")
 public class Author implements Serializable {
