@@ -196,7 +196,6 @@ class AuthorServiceIntegrationTest {
         // Cria e salva um livro associado a este autor
         Book book = new Book();
         book.setTitle("Livro do Autor");
-        book.setLanguage("Português");
         book.setIsbn("978-0000000000");
         book.getAuthors().add(savedAuthor);
         //bookRepository.save(book);

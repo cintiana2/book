@@ -6,7 +6,15 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Table(name = "USER_BOOK")
+@Table(
+    name = "USER_BOOK",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "UK_USER_BOOK_USER_BOOK", 
+            columnNames = {"USER_APP_ID", "BOOK_ID"}
+        )
+    }
+)
 public class UserBook implements Serializable {
 
 
@@ -135,8 +143,16 @@ public class UserBook implements Serializable {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
-    @Override
+            
+    public UserApp getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(UserApp updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+
+	@Override
    	public boolean equals(Object o) {
    		if (this == o) return true;
    		if (o == null || getClass() != o.getClass()) return false;

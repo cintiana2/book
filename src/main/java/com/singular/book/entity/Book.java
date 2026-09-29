@@ -38,8 +38,8 @@ public class Book implements Serializable {
 	@Column(name = "TITLE", nullable = false, length = 200)
 	private String title;
 
-	@Column(name = "LANGUAGE", nullable = false, length = 50)
-	private String language;
+	@Column(name = "ORIGINAL_TITLE", length = 200)
+	private String originalTitle;
 
 	@Column(name = "ISBN", unique = true, length = 20)
 	private String isbn;
@@ -67,14 +67,12 @@ public class Book implements Serializable {
 	public Book() {
 	}
 
-	
-
-	public Book(Long id, String title, String language, String isbn, LocalDateTime createdAt, LocalDateTime updatedAt,
+	public Book(Long id, String title, String originalTitle, String isbn, LocalDateTime createdAt, LocalDateTime updatedAt,
 			List<Author> authors, List<Genre> genres, UserApp updatedBy) {
 		super();
 		this.id = id;
 		this.title = title;
-		this.language = language;
+		this.originalTitle = originalTitle;
 		this.isbn = isbn;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
@@ -82,8 +80,6 @@ public class Book implements Serializable {
 		this.genres = genres;
 		this.updatedBy = updatedBy;
 	}
-
-
 
 	// Getters e Setters
 	public Long getId() {
@@ -102,12 +98,12 @@ public class Book implements Serializable {
 		this.title = title;
 	}
 
-	public String getLanguage() {
-		return language;
+	public String getOriginalTitle() {
+		return originalTitle;
 	}
 
-	public void setLanguage(String language) {
-		this.language = language;
+	public void setOriginalTitle(String originalTitle) {
+		this.originalTitle = originalTitle;
 	}
 
 	public String getIsbn() {
