@@ -3,6 +3,7 @@ package com.singular.book.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,9 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.singular.book.service.BookService;
-import com.singular.book.vo.BookVO;
 import com.singular.book.vo.BookResponseVO;
-import com.singular.book.vo.UserBookResponseVO;
+import com.singular.book.vo.BookVO;
 
 import jakarta.validation.Valid;
 
@@ -28,68 +28,88 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/books")
 public class BookController {
 
-    @Autowired
-    private BookService bookService;
+	@Autowired
+	private BookService bookService;
 
-    @PostMapping
-    public ResponseEntity<BookResponseVO> create(
-            @Valid @RequestBody BookVO vo,
-            @RequestHeader("X-User-Id") Long userId) {
-        
-        BookResponseVO createdBook = bookService.create(vo, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdBook);
-    }
+	@PostMapping
+	public ResponseEntity<BookResponseVO> create(@Valid @RequestBody BookVO vo,
+			@RequestHeader("X-User-Id") Long userId) {
 
-    @PutMapping("/{id}")
-    public ResponseEntity<BookResponseVO> update(
-            @PathVariable Long id,
-            @Valid @RequestBody BookVO vo,
-            @RequestHeader("X-User-Id") Long userId) {
+		BookResponseVO createdBook = bookService.create(vo, userId);
+		return ResponseEntity.status(HttpStatus.CREATED).body(createdBook);
+	}
 
-        BookResponseVO updatedBook = bookService.update(id, vo, userId);
-        return ResponseEntity.ok(updatedBook);
-    }
+	@PutMapping("/{id}")
+	public ResponseEntity<BookResponseVO> update(@PathVariable Long id, @Valid @RequestBody BookVO vo,
+			@RequestHeader("X-User-Id") Long userId) {
 
-    // Altera o READ_BY recebendo o booleano via Query Param: PATCH /api/books/10/read-by?value=true
-    @PatchMapping("/{id}/read-by")
-    public ResponseEntity<UserBookResponseVO> updateReadBy(
-            @PathVariable Long id,
-            @RequestParam(name = "value") Boolean value,
-            @RequestHeader("X-User-Id") Long userId) {
+		BookResponseVO updatedBook = bookService.update(id, vo, userId);
+		return ResponseEntity.ok(updatedBook);
+	}
 
-        UserBookResponseVO result = bookService.updateReadBy(id, value, userId);
-        return ResponseEntity.ok(result);
-    }
+	@PatchMapping("/{id}/read-by")
+	public ResponseEntity<Void> updateReadBy(@PathVariable Long id, @RequestParam(name = "value") Boolean value,
+			@RequestHeader("X-User-Id") Long userId) {
 
-    // Altera o WRITTEN_BY recebendo o booleano via Query Param: PATCH /api/books/10/written-by?value=true
-    @PatchMapping("/{id}/written-by")
-    public ResponseEntity<UserBookResponseVO> updateWrittenBy(
-            @PathVariable Long id,
-            @RequestParam(name = "value") Boolean value,
-            @RequestHeader("X-User-Id") Long userId) {
+		bookService.updateReadBy(id, value, userId);
+		return ResponseEntity.ok().build();
+	}
 
-        UserBookResponseVO result = bookService.updateWrittenBy(id, value, userId);
-        return ResponseEntity.ok(result);
-    }
+	@PatchMapping("/{id}/written-by")
+	public ResponseEntity<Void> updateWrittenBy(@PathVariable Long id,
+			@RequestParam(name = "value") Boolean value, @RequestHeader("X-User-Id") Long userId) {
 
-    @GetMapping("/{id}")
-    public ResponseEntity<BookResponseVO> findById(
-            @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long userId) {
-        
-        BookResponseVO book = bookService.findById(id, userId);
-        return ResponseEntity.ok(book);
-    }
+		 bookService.updateWrittenBy(id, value, userId);
+		return ResponseEntity.ok().build();
+	}
 
-    @GetMapping
-    public ResponseEntity<Page<BookResponseVO>> findAll(Pageable pageable) {
-        Page<BookResponseVO> books = bookService.findAll(pageable);
-        return ResponseEntity.ok(books);
-    }
+	@GetMapping("/{id}")
+	public ResponseEntity<BookResponseVO> findById(@PathVariable Long id, @RequestHeader("X-User-Id") Long userId) {
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        bookService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
+		BookResponseVO book = bookService.findById(id, userId);
+		return ResponseEntity.ok(book);
+	}
+
+	@GetMapping
+	public ResponseEntity<Page<BookResponseVO>> findAll(Pageable pageable) {
+		Page<BookResponseVO> books = bookService.findAll(pageable);
+		return ResponseEntity.ok(books);
+	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> delete(@PathVariable Long id) {
+		bookService.delete(id);
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/search-by-title")
+	public ResponseEntity<Page<BookResponseVO>> findByTitle(@RequestParam(required = false) String title,
+			@PageableDefault(size = 10, sort = "title") Pageable pageable) {
+
+		Page<BookResponseVO> books = bookService.findByTitle(title, pageable);
+		return ResponseEntity.ok(books);
+	}
+
+	@GetMapping("/search-by-author")
+	public ResponseEntity<Page<BookResponseVO>> findByAuthorName(@RequestParam(required = false) String authorName,
+			@PageableDefault(size = 10, sort = "title") Pageable pageable) {
+
+		Page<BookResponseVO> books = bookService.findByAuthorName(authorName, pageable);
+		return ResponseEntity.ok(books);
+	}
+
+	@GetMapping("/search")
+	public ResponseEntity<Page<BookResponseVO>> findByTitleAndAuthorName(@RequestParam(required = false) String title,
+			@RequestParam(required = false) String authorName,
+			@PageableDefault(size = 10, sort = "title") Pageable pageable) {
+
+		Page<BookResponseVO> books = bookService.findByTitleAndAuthorName(title, authorName, pageable);
+		return ResponseEntity.ok(books);
+	}
+
+	@GetMapping("/isbn/{isbn}")
+	public ResponseEntity<BookResponseVO> findByIsbn(@PathVariable String isbn) {
+		BookResponseVO book = bookService.findByIsbn(isbn);
+		return ResponseEntity.ok(book);
+	}
 }

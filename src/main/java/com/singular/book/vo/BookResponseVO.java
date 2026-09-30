@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.singular.book.enums.GenreEnum;
+
 public class BookResponseVO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -15,10 +17,10 @@ public class BookResponseVO implements Serializable {
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	private String updatedByUserName;
-	private List<String> authorNames;
-	private List<String> genreNames;
+	private List<AuthorVO> authors;
+	private List<GenreEnum> genres;
 
-	// Novo campo com as informações de relação do utilizador com o livro
+
 	private UserBookResponseVO userBook;
 
 	public Long getId() {
@@ -77,20 +79,20 @@ public class BookResponseVO implements Serializable {
 		this.updatedByUserName = updatedByUserName;
 	}
 
-	public List<String> getAuthorNames() {
-		return authorNames;
+	public List<AuthorVO> getAuthors() {
+		return authors;
 	}
 
-	public void setAuthorNames(List<String> authorNames) {
-		this.authorNames = authorNames;
+	public void setAuthors(List<AuthorVO> authors) {
+		this.authors = authors;
 	}
 
-	public List<String> getGenreNames() {
-		return genreNames;
+	public List<GenreEnum> getGenres() {
+		return genres;
 	}
 
-	public void setGenreNames(List<String> genreNames) {
-		this.genreNames = genreNames;
+	public void setGenres(List<GenreEnum> genres) {
+		this.genres = genres;
 	}
 
 	public UserBookResponseVO getUserBook() {

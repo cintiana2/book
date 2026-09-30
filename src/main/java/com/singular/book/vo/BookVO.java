@@ -3,6 +3,8 @@ package com.singular.book.vo;
 import java.io.Serializable;
 import java.util.List;
 
+import com.singular.book.enums.GenreEnum;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -22,7 +24,7 @@ public class BookVO implements Serializable {
 	private String isbn;
 
 	private List<Long> authorIds;
-	private List<Long> genreIds;
+	private List<GenreEnum> genres;
 
 	private Boolean readBy = false;
 	private Boolean writtenBy = false;
@@ -59,12 +61,12 @@ public class BookVO implements Serializable {
 		this.authorIds = authorIds;
 	}
 
-	public List<Long> getGenreIds() {
-		return genreIds;
+	public List<GenreEnum> getGenres() {
+		return genres;
 	}
 
-	public void setGenreIds(List<Long> genreIds) {
-		this.genreIds = genreIds;
+	public void setGenres(List<GenreEnum> genres) {
+		this.genres = genres;
 	}
 
 	public Boolean getReadBy() {

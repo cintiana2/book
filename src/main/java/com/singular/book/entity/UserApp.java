@@ -65,6 +65,10 @@ public class UserApp implements Serializable {
 
     public UserApp() {
     }
+    
+    public UserApp(Long id) {
+    	this.id = id;
+    }
 
     @PrePersist
     protected void onCreate() {
