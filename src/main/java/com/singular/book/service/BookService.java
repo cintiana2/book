@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -38,16 +40,19 @@ public class BookService {
 	private final GenreRepository genreRepository;
 
 	private final BookMapper bookMapper;
+	
+	private final MessageSource messageSource;
 
 	public BookService(BookRepository bookRepository, UserBookRepository userBookRepository,
 			UserAppRepository userAppRepository, AuthorRepository authorRepository, GenreRepository genreRepository,
-			BookMapper bookMapper) {
+			BookMapper bookMapper, MessageSource messageSource) {
 		this.bookRepository = bookRepository;
 		this.userBookRepository = userBookRepository;
 		this.userAppRepository = userAppRepository;
 		this.authorRepository = authorRepository;
 		this.genreRepository = genreRepository;
 		this.bookMapper = bookMapper;
+		this.messageSource = messageSource;
 	}
 
 	@Transactional
@@ -242,24 +247,25 @@ public class BookService {
 	    return bookMapper.mapToVO(book, null);
 	}
 	
-	// Validações
+	//validações
 	
-	private Book returnAndvalidationISBN(String isbn) {
-		
-		  if (isbn == null || isbn.isBlank()) {
-		        throw new IllegalArgumentException("O ISBN deve ser informado.");
-		    }
-		    Book book = bookRepository.findByIsbn(isbn.trim())
-		            .orElseThrow(() -> new IllegalArgumentException("Livro não encontrado para o ISBN: " + isbn));
-		    
-		    return book;
+	private String getMessage(String code, Object... args) {
+		return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
 	}
 	
-	
-	
+	private Book returnAndvalidationISBN(String isbn) {
+		if (isbn == null || isbn.isBlank()) {
+			throw new IllegalArgumentException(getMessage("book.validation.isbn.required"));
+		}
+		return bookRepository.findByIsbn(isbn.trim())
+				.orElseThrow(() -> new IllegalArgumentException(
+						getMessage("book.validation.isbn.not-found", isbn)));
+	}
+		
 	private UserApp findUserOrThrow(Long userId) {
         return userAppRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado id: " + userId));
+                .orElseThrow(() -> new IllegalArgumentException(
+                		getMessage("book.validation.user.not-found", userId)));
     }
 	
 	private void validateDuplicatedBook(BookVO vo) {
@@ -269,7 +275,7 @@ public class BookService {
 
 	private void checkIsbnAvailability(String isbn) {
 	    if (isbn != null && !isbn.isBlank() && bookRepository.existsByIsbn(isbn)) {
-	        throw new IllegalArgumentException("Já existe um livro cadastrado com o ISBN informado.");
+	        throw new IllegalArgumentException(getMessage("book.validation.isbn.exists"));
 	    }
 	}
 
@@ -281,14 +287,15 @@ public class BookService {
 	                authorIds.size()
 	        );
 	        if (!existing.isEmpty()) {
-	            throw new IllegalArgumentException("Já existe um livro cadastrado com esse mesmo título e autor(es).");
+	            throw new IllegalArgumentException(getMessage("book.validation.duplicate"));
 	        }
 	    }
 	}
 	
 	private Book findBookOrThrow(Long bookId) {
         return bookRepository.findById(bookId)
-                .orElseThrow(() -> new IllegalArgumentException("Livro não encontrado id: " + bookId));
+                .orElseThrow(() -> new IllegalArgumentException(
+                		getMessage("book.validation.book.not-found", bookId)));
     }
 	
 	private void validateBookUpdate(BookVO vo, Long bookId) {
@@ -297,7 +304,7 @@ public class BookService {
 
     private void checkIsbnAvailabilityForUpdate(String isbn, Long bookId) {
         if (isbn != null && !isbn.isBlank() && bookRepository.existsByIsbnAndIdNot(isbn, bookId)) {
-            throw new IllegalArgumentException("O ISBN informado já pertence a outro livro.");
+            throw new IllegalArgumentException(getMessage("book.validation.isbn.exists-other"));
         }
     }
     
