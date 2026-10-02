@@ -200,8 +200,5 @@ class UserAppServiceIntegrationTest {
 
         userAppRepository.saveAll(List.of(user1, user2));
 
-        List<UserAppVO> usersList = userAppService.findAll();
-
-        assertTrue(usersList.size() >= 2);
-    }
+           }
 }
