@@ -1,11 +1,9 @@
 package com.singular.book.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,115 +11,100 @@ import org.springframework.transaction.annotation.Transactional;
 import com.singular.book.entity.Role;
 import com.singular.book.entity.UserApp;
 import com.singular.book.entity.UserStatus;
+import com.singular.book.exceptions.BusinessException;
+import com.singular.book.mapper.UserAppMapper;
 import com.singular.book.repository.UserAppRepository;
 import com.singular.book.repository.UserStatusRepository;
 import com.singular.book.vo.ChangePasswordVO;
 import com.singular.book.vo.LoginVO;
 import com.singular.book.vo.UserAppVO;
 
-import jakarta.persistence.EntityNotFoundException;
-
 @Service
 public class UserAppService {
 
     private static final Long ACTIVE_STATUS_ID = 1L;
     private static final Long INACTIVE_STATUS_ID = 2L;
-    private static Role  DEFAULT_ROLE = new Role(1L, "ROLE_USER");
-
+    private static final Role DEFAULT_ROLE = new Role(1L, "ROLE_USER");
 
     private final UserAppRepository userAppRepository;
     private final UserStatusRepository userStatusRepository;
-   
     private final PasswordEncoder passwordEncoder;
+    private final UserAppMapper userAppMapper;
+    private final MessageSource messageSource;
 
     public UserAppService(UserAppRepository userAppRepository,
                           UserStatusRepository userStatusRepository,
-                         
-                          PasswordEncoder passwordEncoder) {
+                          PasswordEncoder passwordEncoder,
+                          UserAppMapper userAppMapper,
+                          MessageSource messageSource) {
         this.userAppRepository = userAppRepository;
         this.userStatusRepository = userStatusRepository;
-       
         this.passwordEncoder = passwordEncoder;
+        this.userAppMapper = userAppMapper;
+        this.messageSource = messageSource;
     }
 
     @Transactional
     public UserAppVO create(UserAppVO userVo) {
-        if (userAppRepository.existsByLogin(userVo.getLogin())) {
-            throw new IllegalArgumentException("Já existe um usuário cadastrado com este login.");
-        }
-
-        if (userVo.getPassword() == null || userVo.getPassword().isBlank()) {
-            throw new IllegalArgumentException("A senha é obrigatória para o cadastro.");
-        }
+        validateDuplicatedLogin(userVo.getLogin());
+        validatePasswordPresence(userVo.getPassword());
 
         Long targetStatusId = userVo.getStatusId() != null ? userVo.getStatusId() : ACTIVE_STATUS_ID;
-        
-        UserStatus status = userStatusRepository.findById(targetStatusId)
-                .orElseThrow(() -> new EntityNotFoundException("Status não encontrado para o ID informado."));
-
-       
+        UserStatus status = findStatusOrThrow(targetStatusId);
 
         UserApp user = new UserApp();
         user.setName(userVo.getName());
         user.setLogin(userVo.getLogin());
         user.setPassword(passwordEncoder.encode(userVo.getPassword()));
         user.setStatus(status);
-        
         user.getRoles().add(DEFAULT_ROLE);
 
         UserApp savedUser = userAppRepository.save(user);
-        return toVo(savedUser);
+        return userAppMapper.mapToVO(savedUser);
     }
 
     @Transactional
     public UserAppVO login(LoginVO loginVo) {
         UserApp user = userAppRepository.findByLogin(loginVo.getLogin())
-                .orElseThrow(() -> new IllegalArgumentException("Login ou senha incorretos."));
+                .orElseThrow(() -> new BusinessException(getMessage("user.validation.invalid-credentials")));
 
         if (user.getStatus() != null && INACTIVE_STATUS_ID.equals(user.getStatus().getId())) {
-            throw new IllegalStateException("Usuário inativo. Acesso negado.");
+            throw new BusinessException(getMessage("user.validation.inactive"));
         }
 
         if (!passwordEncoder.matches(loginVo.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Login ou senha incorretos.");
+            throw new BusinessException(getMessage("user.validation.invalid-credentials"));
         }
 
-        // Atualiza a data do último login e consequentemente a data de atualização
         user.setLastLogin(LocalDateTime.now());
         UserApp updatedUser = userAppRepository.save(user);
 
-        return toVo(updatedUser);
+        return userAppMapper.mapToVO(updatedUser);
     }
 
     @Transactional
     public UserAppVO update(Long userId, UserAppVO userVo) {
-        UserApp user = userAppRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
-
-        if (!user.getLogin().equals(userVo.getLogin()) && userAppRepository.existsByLogin(userVo.getLogin())) {
-            throw new IllegalArgumentException("O novo login informado já está em uso por outro usuário.");
-        }
+        UserApp user = findUserOrThrow(userId);
+        validateLoginUpdate(userVo.getLogin(), user);
 
         user.setName(userVo.getName());
         user.setLogin(userVo.getLogin());
 
         if (userVo.getStatusId() != null) {
-            UserStatus status = userStatusRepository.findById(userVo.getStatusId())
-                    .orElseThrow(() -> new EntityNotFoundException("Status não encontrado para o ID informado."));
+            UserStatus status = findStatusOrThrow(userVo.getStatusId());
             user.setStatus(status);
         }
 
         UserApp updatedUser = userAppRepository.save(user);
-        return toVo(updatedUser);
+        return userAppMapper.mapToVO(updatedUser);
     }
 
     @Transactional
     public void changePassword(Long userId, ChangePasswordVO changePasswordVo) {
-        UserApp user = userAppRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
+        UserApp user = findUserOrThrow(userId);
 
         if (!passwordEncoder.matches(changePasswordVo.getCurrentPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("A senha atual informada está incorreta.");
+            throw new BusinessException(getMessage("user.validation.current-password.incorrect"));
         }
 
         user.setPassword(passwordEncoder.encode(changePasswordVo.getNewPassword()));
@@ -130,11 +113,8 @@ public class UserAppService {
 
     @Transactional
     public void softDelete(Long userId) {
-        UserApp user = userAppRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
-
-        UserStatus inactiveStatus = userStatusRepository.findById(INACTIVE_STATUS_ID)
-                .orElseThrow(() -> new EntityNotFoundException("Status INATIVO não cadastrado no sistema."));
+        UserApp user = findUserOrThrow(userId);
+        UserStatus inactiveStatus = findStatusOrThrow(INACTIVE_STATUS_ID);
 
         user.setStatus(inactiveStatus);
         userAppRepository.save(user);
@@ -142,46 +122,49 @@ public class UserAppService {
 
     @Transactional(readOnly = true)
     public UserAppVO findById(Long userId) {
-        UserApp user = userAppRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
-        return toVo(user);
+        UserApp user = findUserOrThrow(userId);
+        return userAppMapper.mapToVO(user);
     }
 
     @Transactional(readOnly = true)
     public UserAppVO findByLogin(String login) {
         UserApp user = userAppRepository.findByLogin(login)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado para o login informado."));
-        return toVo(user);
+                .orElseThrow(() -> new BusinessException(getMessage("user.validation.login.not-found", login)));
+        return userAppMapper.mapToVO(user);
     }
 
-    @Transactional(readOnly = true)
-    public List<UserAppVO> findAll() {
-        List<UserApp> userList = userAppRepository.findAll();
-        List<UserAppVO> voList = new ArrayList<>();
 
-        for (int i = 0; i < userList.size(); i++) {
-            voList.add(toVo(userList.get(i)));
-        }
+    // --- Métodos de Validação e Suporte ---
 
-        return voList;
+    private String getMessage(String code, Object... args) {
+        return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
     }
 
-    private UserAppVO toVo(UserApp user) {
-        UserAppVO vo = new UserAppVO();
-        vo.setId(user.getId());
-        vo.setName(user.getName());
-        vo.setLogin(user.getLogin());
-        if (user.getStatus() != null) {
-            vo.setStatusId(user.getStatus().getId());
-            vo.setStatusDescription(user.getStatus().getName());
+    private UserApp findUserOrThrow(Long userId) {
+        return userAppRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(getMessage("user.validation.user.not-found", userId)));
+    }
+
+    private UserStatus findStatusOrThrow(Long statusId) {
+        return userStatusRepository.findById(statusId)
+                .orElseThrow(() -> new BusinessException(getMessage("user.validation.status.not-found", statusId)));
+    }
+
+    private void validateDuplicatedLogin(String login) {
+        if (login != null && userAppRepository.existsByLogin(login)) {
+            throw new BusinessException(getMessage("user.validation.login.exists"));
         }
-        if (user.getRoles() != null) {
-            Set<String> roleNames = user.getRoles().stream()
-                    .map(Role::getName)
-                    .collect(Collectors.toSet());
-            vo.setRoles(roleNames);
+    }
+
+    private void validatePasswordPresence(String password) {
+        if (password == null || password.isBlank()) {
+            throw new BusinessException(getMessage("user.validation.password.required"));
         }
-        vo.setLastLogin(user.getLastLogin());
-        return vo;
+    }
+
+    private void validateLoginUpdate(String newLogin, UserApp currentUser) {
+        if (!currentUser.getLogin().equals(newLogin) && userAppRepository.existsByLogin(newLogin)) {
+            throw new BusinessException(getMessage("user.validation.login.exists-other"));
+        }
     }
 }

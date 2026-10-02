@@ -16,6 +16,7 @@ import com.singular.book.entity.Book;
 import com.singular.book.entity.UserApp;
 import com.singular.book.entity.UserBook;
 import com.singular.book.enums.GenreEnum;
+import com.singular.book.exceptions.BusinessException;
 import com.singular.book.mapper.BookMapper;
 import com.singular.book.repository.AuthorRepository;
 import com.singular.book.repository.BookRepository;
@@ -255,10 +256,10 @@ public class BookService {
 	
 	private Book returnAndvalidationISBN(String isbn) {
 		if (isbn == null || isbn.isBlank()) {
-			throw new IllegalArgumentException(getMessage("book.validation.isbn.required"));
+			throw new BusinessException(getMessage("book.validation.isbn.required"));
 		}
 		return bookRepository.findByIsbn(isbn.trim())
-				.orElseThrow(() -> new IllegalArgumentException(
+				.orElseThrow(() -> new BusinessException(
 						getMessage("book.validation.isbn.not-found", isbn)));
 	}
 		
@@ -268,18 +269,18 @@ public class BookService {
                 		getMessage("book.validation.user.not-found", userId)));
     }
 	
-	private void validateDuplicatedBook(BookVO vo) {
+	private void validateDuplicatedBook(BookVO vo)  {
 	    checkIsbnAvailability(vo.getIsbn());
 	    checkTitleAndAuthorUniqueness(vo.getTitle(), vo.getAuthorIds());
 	}
 
 	private void checkIsbnAvailability(String isbn) {
 	    if (isbn != null && !isbn.isBlank() && bookRepository.existsByIsbn(isbn)) {
-	        throw new IllegalArgumentException(getMessage("book.validation.isbn.exists"));
+	        throw new BusinessException(getMessage("book.validation.isbn.exists"));
 	    }
 	}
 
-	private void checkTitleAndAuthorUniqueness(String title, List<Long> authorIds) {
+	private void checkTitleAndAuthorUniqueness(String title, List<Long> authorIds){
 	    if (authorIds != null && !authorIds.isEmpty() && title != null) {
 	        List<Book> existing = bookRepository.findByTitleAndAuthorIds(
 	                title.trim(), 
@@ -287,7 +288,7 @@ public class BookService {
 	                authorIds.size()
 	        );
 	        if (!existing.isEmpty()) {
-	            throw new IllegalArgumentException(getMessage("book.validation.duplicate"));
+	            throw new BusinessException(getMessage("book.validation.duplicate"));
 	        }
 	    }
 	}
@@ -302,9 +303,9 @@ public class BookService {
         checkIsbnAvailabilityForUpdate(vo.getIsbn(), bookId);
     }
 
-    private void checkIsbnAvailabilityForUpdate(String isbn, Long bookId) {
+    private void checkIsbnAvailabilityForUpdate(String isbn, Long bookId){
         if (isbn != null && !isbn.isBlank() && bookRepository.existsByIsbnAndIdNot(isbn, bookId)) {
-            throw new IllegalArgumentException(getMessage("book.validation.isbn.exists-other"));
+            throw new BusinessException(getMessage("book.validation.isbn.exists-other"));
         }
     }
     

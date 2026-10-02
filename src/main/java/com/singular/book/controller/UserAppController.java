@@ -1,15 +1,24 @@
 package com.singular.book.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.singular.book.service.UserAppService;
 import com.singular.book.vo.ChangePasswordVO;
 import com.singular.book.vo.LoginVO;
 import com.singular.book.vo.UserAppVO;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users")
@@ -59,11 +68,6 @@ public class UserAppController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping
-    public ResponseEntity<List<UserAppVO>> findAll() {
-        List<UserAppVO> response = userAppService.findAll();
-        return ResponseEntity.ok(response);
-    }
     
     @PostMapping("/login")
     public ResponseEntity<UserAppVO> login(@Valid @RequestBody LoginVO loginVo) {
