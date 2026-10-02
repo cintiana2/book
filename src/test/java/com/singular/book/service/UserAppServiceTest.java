@@ -67,7 +67,7 @@ class UserAppServiceTest {
         userApp.setLogin("cintia.araujo");
         userApp.setPassword("encodedPassword123");
         userApp.setStatus(activeStatus);
-        userApp.getRoles().add(defaultRole);
+        //userApp.getRoles().add(defaultRole);
 
         userAppVO = new UserAppVO();
         userAppVO.setName("Cíntia Araújo");

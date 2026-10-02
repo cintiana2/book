@@ -1,6 +1,7 @@
 package com.singular.book.service;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -10,10 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.singular.book.entity.Role;
 import com.singular.book.entity.UserApp;
+import com.singular.book.entity.UserRole;
 import com.singular.book.entity.UserStatus;
 import com.singular.book.exceptions.BusinessException;
 import com.singular.book.mapper.UserAppMapper;
 import com.singular.book.repository.UserAppRepository;
+import com.singular.book.repository.UserRoleRepository;
 import com.singular.book.repository.UserStatusRepository;
 import com.singular.book.vo.ChangePasswordVO;
 import com.singular.book.vo.LoginVO;
@@ -31,17 +34,20 @@ public class UserAppService {
     private final PasswordEncoder passwordEncoder;
     private final UserAppMapper userAppMapper;
     private final MessageSource messageSource;
+    private final UserRoleRepository userRoleRepository;
 
     public UserAppService(UserAppRepository userAppRepository,
                           UserStatusRepository userStatusRepository,
                           PasswordEncoder passwordEncoder,
                           UserAppMapper userAppMapper,
-                          MessageSource messageSource) {
+                          MessageSource messageSource,
+                          UserRoleRepository userRoleRepository) {
         this.userAppRepository = userAppRepository;
         this.userStatusRepository = userStatusRepository;
         this.passwordEncoder = passwordEncoder;
         this.userAppMapper = userAppMapper;
         this.messageSource = messageSource;
+        this.userRoleRepository = userRoleRepository;
     }
 
     @Transactional
@@ -49,7 +55,7 @@ public class UserAppService {
         validateDuplicatedLogin(userVo.getLogin());
         validatePasswordPresence(userVo.getPassword());
 
-        Long targetStatusId = userVo.getStatusId() != null ? userVo.getStatusId() : ACTIVE_STATUS_ID;
+        Long targetStatusId =  ACTIVE_STATUS_ID;
         UserStatus status = findStatusOrThrow(targetStatusId);
 
         UserApp user = new UserApp();
@@ -57,9 +63,16 @@ public class UserAppService {
         user.setLogin(userVo.getLogin());
         user.setPassword(passwordEncoder.encode(userVo.getPassword()));
         user.setStatus(status);
-        user.getRoles().add(DEFAULT_ROLE);
+        
+        UserRole userRole = new UserRole();
+        userRole.setRole(DEFAULT_ROLE);
+        userRole.setUser(user);
 
         UserApp savedUser = userAppRepository.save(user);
+        UserRole userRoleSaved = userRoleRepository.save(userRole);
+        savedUser.setUserRoles(new HashSet<UserRole>());
+        savedUser.getUserRoles().add(userRoleSaved);
+        
         return userAppMapper.mapToVO(savedUser);
     }
 

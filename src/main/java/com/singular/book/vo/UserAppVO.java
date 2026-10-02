@@ -1,13 +1,13 @@
 package com.singular.book.vo;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public class UserAppVO implements Serializable {
 
@@ -15,21 +15,20 @@ public class UserAppVO implements Serializable {
 
 	private Long id;
 
-	@NotBlank(message = "O nome é obrigatório.")
-	@Size(max = 100, message = "O nome não pode exceder 100 caracteres.")
+	@NotBlank(message = "{user.validation.name.required}")
+	@Size(max = 100, message = "{user.validation.name.size}")
 	private String name;
 
-	@NotBlank(message = "O login é obrigatório.")
-	@Size(max = 50, message = "O login não pode exceder 50 caracteres.")
+	@NotBlank(message = "{user.validation.login.required}")
+	@Size(max = 50, message = "{user.validation.login.size}")
 	private String login;
 
 	// WRITE_ONLY garante que a senha seja recebida nas requisições, mas NUNCA
 	// serializada na resposta JSON
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-	@Size(min = 6, max = 20, message = "A senha deve ter entre 6 e 20 caracteres.")
+	@Size(min = 6, max = 20, message = "{user.validation.password.size}")
 	private String password;
 
-	@NotNull(message = "O ID do status é obrigatório.")
 	private Long statusId;
 
 	private String statusDescription;
@@ -41,10 +40,10 @@ public class UserAppVO implements Serializable {
 	}
 
 	public UserAppVO(Long id,
-			@NotBlank(message = "O nome é obrigatório.") @Size(max = 100, message = "O nome não pode exceder 100 caracteres.") String name,
-			@NotBlank(message = "O login é obrigatório.") @Size(max = 50, message = "O login não pode exceder 50 caracteres.") String login,
-			@Size(min = 6, max = 20, message = "A senha deve ter entre 6 e 20 caracteres.") String password,
-			@NotNull(message = "O ID do status é obrigatório.") Long statusId, String statusDescription,
+			@NotBlank(message = "{user.validation.name.required}") @Size(max = 100, message = "{user.validation.name.size}") String name,
+			@NotBlank(message = "{user.validation.login.required}") @Size(max = 50, message = "{user.validation.login.size}") String login,
+			@Size(min = 6, max = 20, message = "{user.validation.password.size}") String password,
+			Long statusId, String statusDescription,
 			Set<String> roles, LocalDateTime lastLogin) {
 		super();
 		this.id = id;
@@ -120,5 +119,4 @@ public class UserAppVO implements Serializable {
 	public void setLastLogin(LocalDateTime lastLogin) {
 		this.lastLogin = lastLogin;
 	}
-
 }

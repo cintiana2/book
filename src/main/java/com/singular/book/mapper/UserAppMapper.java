@@ -19,8 +19,11 @@ public class UserAppMapper {
         user.setName(vo.getName());
         user.setLogin(vo.getLogin());
         user.setStatus(status);
-        if (roles != null) {
-            user.setRoles(roles);
+        if (user.getUserRoles() != null) {
+            Set<String> roleNames = user.getUserRoles().stream()
+                    .map(userRole -> userRole.getRole().getName())
+                    .collect(Collectors.toSet());
+            vo.setRoles(roleNames);
         }
         return user;
     }
@@ -40,9 +43,9 @@ public class UserAppMapper {
             vo.setStatusDescription(user.getStatus().getName());
         }
 
-        if (user.getRoles() != null) {
-            Set<String> roleNames = user.getRoles().stream()
-                    .map(Role::getName)
+        if (user.getUserRoles() != null) {
+            Set<String> roleNames = user.getUserRoles().stream()
+                    .map(userRole -> userRole.getRole().getName())
                     .collect(Collectors.toSet());
             vo.setRoles(roleNames);
         }

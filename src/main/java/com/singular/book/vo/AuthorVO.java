@@ -1,22 +1,23 @@
 package com.singular.book.vo;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class AuthorVO {
 
     private Long id;
 
-    @NotBlank(message = "O nome do autor é obrigatório.")
+    @NotBlank(message = "{author.validation.name.required}")
     private String name;
 
     private LocalDate birthDate;
 
     private String country;
 
-    @NotNull(message = "O ID do usuário responsável pela alteração é obrigatório.")
+    @NotNull(message = "{author.validation.updatedById.required}")
     private Long updatedById;
 
     private String updatedByName;

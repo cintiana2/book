@@ -29,6 +29,8 @@ public class UserAppController {
     public UserAppController(UserAppService userAppService) {
         this.userAppService = userAppService;
     }
+    
+    //@todo Mudar vo de entrada, aceitar somente login, nome e senha
 
     @PostMapping
     public ResponseEntity<UserAppVO> create(@Valid @RequestBody UserAppVO userVo) {

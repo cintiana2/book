@@ -4,10 +4,10 @@ import jakarta.validation.constraints.NotBlank;
 
 public class LoginVO {
 
-    @NotBlank(message = "O login é obrigatório.")
+    @NotBlank(message = "{user.validation.login.required}")
     private String login;
 
-    @NotBlank(message = "A senha é obrigatória.")
+    @NotBlank(message = "{user.validation.password.required}")
     private String password;
 
     public LoginVO() {

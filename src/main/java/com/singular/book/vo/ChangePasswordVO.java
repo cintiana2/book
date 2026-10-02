@@ -1,19 +1,19 @@
 package com.singular.book.vo;
 
+import java.io.Serializable;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
-import java.io.Serializable;
 
 public class ChangePasswordVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @NotBlank(message = "A senha atual é obrigatória.")
+    @NotBlank(message = "{user.validation.currentPassword.required}")
     private String currentPassword;
 
-    @NotBlank(message = "A nova senha é obrigatória.")
-    @Size(min = 6, max = 20, message = "A nova senha deve ter entre 6 e 20 caracteres.")
+    @NotBlank(message = "{user.validation.newPassword.required}")
+    @Size(min = 6, max = 20, message = "{user.validation.newPassword.size}")
     private String newPassword;
 
     public ChangePasswordVO() {

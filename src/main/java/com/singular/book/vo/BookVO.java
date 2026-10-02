@@ -10,17 +10,16 @@ import jakarta.validation.constraints.Size;
 
 public class BookVO implements Serializable {
 
-
 	private static final long serialVersionUID = -4231463063241534796L;
 
-	@NotBlank(message = "O título é obrigatório")
-	@Size(max = 200, message = "O título deve ter no máximo 200 caracteres")
+	@NotBlank(message = "{book.validation.title.required}")
+	@Size(max = 200, message = "{book.validation.title.size}")
 	private String title;
 
-	@Size(max = 200, message = "O título original deve ter no máximo 200 caracteres")
+	@Size(max = 200, message = "{book.validation.originalTitle.size}")
 	private String originalTitle;
 
-	@Size(max = 20, message = "O ISBN deve ter no máximo 20 caracteres")
+	@Size(max = 20, message = "{book.validation.isbn.size}")
 	private String isbn;
 
 	private List<Long> authorIds;

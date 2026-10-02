@@ -52,14 +52,13 @@ public class AuthorController {
     
     @GetMapping
     public ResponseEntity<Page<AuthorVO>> findAll(
-            @RequestParam(required = false) String name,
             @PageableDefault(page = 0, size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
         
-        Page<AuthorVO> response = authorService.findByName(name, pageable);
+        Page<AuthorVO> response = authorService.findAll(pageable);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping
+    @GetMapping("/by-name")
     public ResponseEntity<Page<AuthorVO>> findByName(
             @RequestParam(required = false) String name,
             @PageableDefault(page = 0, size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
